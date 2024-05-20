@@ -5,10 +5,11 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    color: #333333;
 }
 
 header {
-    background-color: #333;
+    background-color: #002A5E;
     color: white;
     padding: 10px;
     display: flex;
@@ -35,6 +36,7 @@ header nav ul li {
 header nav ul li a {
     color: white;
     text-decoration: none;
+    font-weight: bold;
 }
 
 .container {
@@ -43,7 +45,7 @@ header nav ul li a {
 }
 
 aside {
-    background-color: #f4f4f4;
+    background-color: #F4F4F4;
     padding: 20px;
     width: 200px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
@@ -60,13 +62,14 @@ aside ul li {
 
 aside ul li a {
     text-decoration: none;
-    color: #333;
+    color: #002A5E;
     font-weight: bold;
 }
 
 main {
     flex: 1;
     padding: 20px;
+    background-color: #FFFFFF;
 }
 
 .overview-widgets {
@@ -76,9 +79,11 @@ main {
 }
 
 .widget {
-    background-color: #eaeaea;
+    background-color: #00A5E0;
+    color: white;
     padding: 20px;
     border-radius: 8px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
 }
