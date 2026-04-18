@@ -1,0 +1,47 @@
+# polybot default config. Copy and edit; point POLYBOT_CONFIG at your copy.
+# All numbers are conservative starting points, not recommendations.
+
+[mode]
+# dry_run must be true until Phase 3. Live trading requires explicit config.
+dry_run = true
+# Autonomous = bot executes without approval. Off. Requires unlock_phrase to enable.
+autonomous = false
+unlock_phrase = ""
+
+[risk]
+# Hard caps. All values in USDC unless noted.
+max_trade_usdc = 5.00
+daily_loss_limit_usdc = 10.00
+max_concurrent_positions = 3
+max_position_pct_of_balance = 0.25
+# Minimum edge after fees to place an arb trade, in basis points (100 bps = 1%).
+min_edge_bps = 50
+
+[fees]
+# Polymarket US fee coefficients (effective 2026-04-03). See README for math.
+taker_coefficient = 0.05
+maker_rebate_coefficient = 0.0125
+# Temporary promo taker rebate, expires 2026-04-30. Set to 0.0 after that.
+taker_rebate_fraction = 0.50
+
+[scanner]
+# Phase 1: watch top-N by liquidity. Phase 0 ignores this.
+top_n_markets = 20
+book_depth_levels = 5
+
+[storage]
+sqlite_path = "data/polybot.sqlite"
+
+[logging]
+level = "INFO"
+file = "logs/polybot.log"
+
+[sanity]
+# Anthropic Claude veto layer. Disable to skip the network call in tests.
+enabled = true
+model = "claude-sonnet-4-6"
+max_tokens = 1024
+
+[killswitch]
+# Presence of this file halts trading on next loop iteration.
+sentinel_path = "STOP"

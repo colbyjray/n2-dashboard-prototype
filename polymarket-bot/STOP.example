@@ -1,0 +1,7 @@
+This is documentation, not the kill switch.
+
+Create a file named `STOP` at the project root to halt trading on the next loop
+iteration. The real `STOP` file is gitignored. Remove it to resume trading.
+
+    touch STOP      # halt
+    rm STOP         # resume
