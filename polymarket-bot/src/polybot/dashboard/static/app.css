@@ -28,6 +28,21 @@ header {
   background: var(--panel);
 }
 
+.logout-form {
+  margin-left: auto;
+}
+
+.link-button {
+  background: transparent;
+  color: var(--muted);
+  padding: 0.25rem 0.5rem;
+  font-weight: 400;
+}
+
+.link-button:hover {
+  color: var(--fg);
+}
+
 header h1 {
   margin: 0;
   font-size: 1.25rem;

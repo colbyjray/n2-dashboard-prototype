@@ -8,24 +8,11 @@
 <body>
   <main class="landing">
     <h1>polybot</h1>
-    <p id="msg">Authenticating...</p>
+    {% if bad_token %}
+      <p class="error">Invalid token. Re-launch the dashboard from your terminal and click the printed URL.</p>
+    {% else %}
+      <p class="muted">Run <code>python scripts/dashboard.py</code> in your terminal and click the printed URL.</p>
+    {% endif %}
   </main>
-  <script>
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      const incoming = params.get('token');
-      if (incoming) {
-        localStorage.setItem('polybot_token', incoming);
-        window.history.replaceState({}, '', '/');
-      }
-      const t = localStorage.getItem('polybot_token');
-      if (t) {
-        window.location.href = '/status';
-      } else {
-        document.getElementById('msg').innerText =
-          'No token found. Launch the dashboard from your terminal and click the printed URL.';
-      }
-    })();
-  </script>
 </body>
 </html>

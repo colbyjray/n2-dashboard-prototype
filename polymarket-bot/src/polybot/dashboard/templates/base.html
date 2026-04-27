@@ -6,19 +6,6 @@
   <title>polybot {% block title %}{% endblock %}</title>
   <link rel="stylesheet" href="/static/app.css">
   <script src="https://unpkg.com/htmx.org@2.0.3"></script>
-  <script>
-    // Inject the dashboard token into every htmx request.
-    (function() {
-      const t = localStorage.getItem('polybot_token');
-      if (!t) {
-        if (window.location.pathname !== '/') window.location.href = '/';
-        return;
-      }
-      document.body && document.body.addEventListener('htmx:configRequest', function(evt) {
-        evt.detail.headers['X-Polybot-Token'] = t;
-      });
-    })();
-  </script>
 </head>
 <body>
   <header>
@@ -31,16 +18,12 @@
       <a href="/logs">Logs</a>
       <a href="/setup">Setup</a>
     </nav>
+    <form action="/logout" method="post" class="logout-form">
+      <button type="submit" class="link-button">Log out</button>
+    </form>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
-  <script>
-    // htmx events bind after body exists.
-    document.body.addEventListener('htmx:configRequest', function(evt) {
-      const t = localStorage.getItem('polybot_token');
-      if (t) evt.detail.headers['X-Polybot-Token'] = t;
-    });
-  </script>
 </body>
 </html>
