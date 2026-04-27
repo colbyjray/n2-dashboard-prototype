@@ -35,6 +35,8 @@ ignore = ["ANN101", "ANN102"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ANN"]
 "scripts/*" = ["ANN"]
+# client.py wraps a third-party SDK whose return shapes get modeled in Phase 1.
+"src/polybot/client.py" = ["ANN401"]
 
 [tool.black]
 line-length = 100

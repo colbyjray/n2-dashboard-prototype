@@ -103,8 +103,8 @@ Per-contract fee scales with `p * (1 - p)`, which makes fees lowest at price
 extremes and highest at $0.50.
 
 ```
-taker_fee_per_contract  = theta_taker  * p * (1 - p) * 2
-maker_rebate_per_contract = theta_maker * p * (1 - p) * 2
+taker_fee_per_contract  = theta_taker  * p * (1 - p)
+maker_rebate_per_contract = theta_maker * p * (1 - p)
 ```
 
 Current coefficients (see `config/default.toml`):
@@ -114,7 +114,7 @@ Current coefficients (see `config/default.toml`):
 - Temporary taker rebate = 50% of taker fee, expires 2026-04-30. Set
   `fees.taker_rebate_fraction = 0.0` after that.
 
-At p = 0.50, taker fee per 100 contracts = $1.25. At p = 0.10, it is $0.90.
+At p = 0.50, taker fee per 100 contracts = $1.25. At p = 0.10, it is $0.45.
 
 ## Kill switch
 
