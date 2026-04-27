@@ -142,6 +142,34 @@ pre, code {
   font-size: 0.875rem;
 }
 
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+table.data th, table.data td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+table.data th {
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+}
+
+table.data tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+table.data td {
+  font-family: ui-monospace, monospace;
+}
+
 pre.logs {
   background: var(--bg);
   border: 1px solid var(--border);

@@ -1,0 +1,76 @@
+{% if not ready %}
+<div class="error">{{ error }}</div>
+{% else %}
+
+<dl class="status-list" style="margin-bottom:1.5rem;">
+  <dt>Total trades</dt><dd>{{ summary.trade_count }}</dd>
+  <dt>Realized P&amp;L</dt><dd>{{ summary.realized_pnl_usdc }} USDC</dd>
+</dl>
+
+<h3>Trades</h3>
+{% if not trades %}
+  <p class="muted">No trades yet.</p>
+{% else %}
+<table class="data">
+  <thead>
+    <tr>
+      <th>When</th><th>Market</th><th>State</th>
+      <th>Price</th><th>Qty</th><th>Cost</th><th>Realized P&amp;L</th><th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in trades %}
+    <tr>
+      <td>{{ t.when }}</td>
+      <td>{{ t.market }}</td>
+      <td>{{ t.side }}</td>
+      <td>{{ t.price }}</td>
+      <td>{{ t.qty }}</td>
+      <td>{{ t.cost }}</td>
+      <td>{{ t.realized_pnl }}</td>
+      <td>{{ t.aggressor }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if resolutions %}
+<h3 style="margin-top:1.5rem;">Market resolutions</h3>
+<table class="data">
+  <thead>
+    <tr><th>When</th><th>Market</th><th>Side</th><th>Realized</th></tr>
+  </thead>
+  <tbody>
+    {% for r in resolutions %}
+    <tr>
+      <td>{{ r.when }}</td>
+      <td>{{ r.market }}</td>
+      <td>{{ r.side }}</td>
+      <td>{{ r.realized }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if balance %}
+<h3 style="margin-top:1.5rem;">Balance changes</h3>
+<table class="data">
+  <thead>
+    <tr><th>When</th><th>Kind</th><th>Amount</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for b in balance %}
+    <tr>
+      <td>{{ b.when }}</td>
+      <td>{{ b.kind }}</td>
+      <td>{{ b.amount }}</td>
+      <td>{{ b.status }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% endif %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}— history{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Account history</h2>
+  <p class="muted">
+    Pulled live from <code>portfolio.activities()</code>. Read only. The
+    bot has placed no orders; everything below is what you've done
+    manually on Polymarket US.
+  </p>
+  {% if not polymarket_ready %}
+    <p>No credentials. <a href="/setup">Go to setup</a>.</p>
+  {% else %}
+    <div id="history-data" hx-get="/history/data" hx-trigger="load" hx-swap="innerHTML">
+      <p class="muted">loading...</p>
+    </div>
+    <p class="muted" style="margin-top:1rem;">
+      <button hx-get="/history/data" hx-target="#history-data" hx-swap="innerHTML">Refresh</button>
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

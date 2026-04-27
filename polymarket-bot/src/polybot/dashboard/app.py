@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from polybot.dashboard.auth import COOKIE_MAX_AGE, COOKIE_NAME, is_valid_token
-from polybot.dashboard.routes import decisions, logs, markets, pnl, setup, status
+from polybot.dashboard.routes import decisions, history, logs, markets, pnl, setup, status
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ def create_app() -> FastAPI:
 
     app.include_router(setup.router)
     app.include_router(status.router)
+    app.include_router(history.router)
     app.include_router(markets.router)
     app.include_router(decisions.router)
     app.include_router(pnl.router)

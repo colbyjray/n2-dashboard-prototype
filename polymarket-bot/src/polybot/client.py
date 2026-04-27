@@ -29,3 +29,11 @@ def positions(client: PolymarketUS) -> Any:
 
 def open_orders(client: PolymarketUS) -> Any:
     return client.orders.list()
+
+
+def activities(client: PolymarketUS, limit: int = 100) -> Any:
+    """Read-only call to fetch trade and balance-change history."""
+    from polymarket_us.types.portfolio import GetActivitiesParams
+
+    params = GetActivitiesParams(limit=limit, sortOrder="SORT_ORDER_DESCENDING")
+    return client.portfolio.activities(params)
