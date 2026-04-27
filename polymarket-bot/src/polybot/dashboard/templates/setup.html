@@ -18,7 +18,8 @@
     <dd>{{ "stored" if anthropic_set else "(not set)" }}</dd>
   </dl>
 
-  <form hx-post="/setup/save" hx-target="#save-result" hx-swap="innerHTML">
+  <form hx-post="/setup/save" hx-target="#save-result" hx-swap="innerHTML"
+        hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(), 600)">
     <label>
       Polymarket key id
       <input type="text" name="polymarket_key_id" autocomplete="off" placeholder="01234567-89ab-cdef-0123-456789abcdef">
@@ -39,8 +40,7 @@
 <section class="card">
   <h2>Test connection</h2>
   <p class="muted">Authenticates and reads your account balance. No trades.</p>
-  <button hx-post="/setup/test" hx-target="#test-result" hx-swap="innerHTML"
-          {% if not polymarket_ready %}disabled{% endif %}>
+  <button hx-post="/setup/test" hx-target="#test-result" hx-swap="innerHTML">
     Test
   </button>
   <div id="test-result" class="result"></div>
