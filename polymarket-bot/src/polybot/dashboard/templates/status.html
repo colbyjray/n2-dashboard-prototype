@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}— status{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Account</h2>
+  {% if not polymarket_ready %}
+    <p>No credentials. <a href="/setup">Go to setup</a>.</p>
+  {% else %}
+    <div id="status-data" hx-get="/status/data" hx-trigger="load, every 5s" hx-swap="innerHTML">
+      <p class="muted">loading...</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Kill switch</h2>
+  <p class="muted">
+    Engaging creates a <code>STOP</code> file at the project root. The bot
+    halts on its next loop iteration.
+  </p>
+  <p>
+    Status:
+    <strong id="ks-state" class="{{ 'error' if killswitch_active else 'ok' }}">
+      {{ "ENGAGED" if killswitch_active else "released" }}
+    </strong>
+  </p>
+  <button hx-post="/status/killswitch/engage" hx-target="#ks-state" hx-swap="innerHTML"
+          hx-confirm="Engage kill switch? The bot will halt.">Engage</button>
+  <button hx-post="/status/killswitch/release" hx-target="#ks-state" hx-swap="innerHTML">Release</button>
+</section>
+{% endblock %}

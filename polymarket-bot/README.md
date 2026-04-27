@@ -2,105 +2,105 @@
 
 Automated trading bot for Polymarket US (CFTC-regulated, QCX LLC). v1 runs a
 YES/NO intra-market arbitrage scanner against the official `polymarket-us`
-Python SDK. Phase 0 ships only a connection test.
+Python SDK. Phase 0 ships a local web dashboard for setup, status, and
+control. The bot's strategy code lands in Phase 1.
 
 This is not the international Polymarket. If you find yourself installing
 `py-clob-client`, stop.
 
-## Phase 0 checklist
-
-Do each step in order.
+## Quickstart (the only steps you need)
 
 ### 1. Generate API credentials
 
 1. Finish KYC on polymarket.us if you have not already.
-2. Go to https://polymarket.us/developer.
-3. Create a new Ed25519 API key pair. You will get a `keyId` (UUID) and a
-   `secretKey` (base64-encoded Ed25519 private key).
-4. Save both somewhere safe. The secret key is shown once.
+2. Visit https://polymarket.us/developer.
+3. Create a new Ed25519 API key pair. Copy the `keyId` (UUID) and the
+   `secretKey` (base64 Ed25519 private key). The secret is shown once.
 
-### 2. Populate `.env`
+### 2. Install dependencies
 
-From the project root:
-
-```
-cp .env.example .env
-```
-
-Open `.env` and fill in:
-
-- `POLYMARKET_KEY_ID` = the UUID from step 1
-- `POLYMARKET_SECRET_KEY` = the base64 secret key from step 1
-- `ANTHROPIC_API_KEY` = your Anthropic key (not used in Phase 0)
-
-The `.env` file is gitignored. Verify:
+In a terminal, in this folder:
 
 ```
-git check-ignore -v .env
-```
-
-### 3. Install dependencies
-
-Use a virtualenv. Python 3.11+ required.
-
-```
-python3.11 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Or with the pyproject:
+### 3. Launch the dashboard
 
 ```
-pip install -e ".[dev]"
+python scripts/dashboard.py
 ```
 
-### 4. Run the connection test
+The terminal prints a URL like:
 
 ```
-python scripts/test_connection.py
+http://127.0.0.1:8765/?token=AbCd...
 ```
 
-### 5. Expected output on success
+Click it once. Your browser stores the token. From then on you can use
+`http://127.0.0.1:8765` directly.
 
-```
-Authenticating to Polymarket US...
+### 4. Save your keys in the dashboard
 
---- Account balance ---
-<balance object from SDK, should show your USDC>
+Open the **Setup** page. Paste your Polymarket `keyId`, `secretKey`, and
+your Anthropic API key. Click **Save to keychain**. Click **Test**.
 
---- Open positions ---
-(none)        # or a list if you have open positions
+If you see your account balance appear, you're done with setup.
 
---- Open orders ---
-(none)        # or a list if you have open orders
-
-OK. Connection verified. No trades placed.
-```
-
-Non-zero exit means something failed. Read the error and fix before moving on.
-
-### 6. Run the unit tests
+### 5. Verify the unit tests
 
 ```
 pytest
 ```
 
-All tests should pass. These cover fee math, edge math, and risk checks.
-No network calls.
+All 18 tests should pass.
 
-## What Phase 0 does not do
+## Where do my keys live?
 
-- No trading. No orders placed. No orders cancelled.
-- No WebSocket subscription. That lands in Phase 1.
-- No Anthropic call. That lands in Phase 1's sanity layer.
+In your operating system's secure credential store, via the `keyring`
+library:
+
+- macOS: login Keychain (Keychain Access app)
+- Linux: Secret Service / GNOME Keyring
+- Windows: Credential Manager
+
+Keys are never written to a file in this project. There is no `.env` step.
+The `.env.example` file in the repo is left as a fallback option for users
+who prefer environment-variable-based config; the dashboard does not use it.
+
+## What the dashboard shows
+
+- **Setup**: paste keys, test connection, clear keys.
+- **Status**: live balance, open positions, open orders. Big kill switch.
+  Auto-refreshes every 5 seconds.
+- **Markets** (Phase 1): top-N markets by liquidity with computed arb edge.
+- **Decisions** (Phase 1): every arb candidate the scanner logged with
+  edge, sanity verdict, and outcome.
+- **P&L** (Phase 2): realized and unrealized profit, daily breakdown, fee
+  drag, distance to daily-loss cap.
+- **Logs**: recent log lines from `logs/polybot.log`.
+
+The dashboard binds to `127.0.0.1:8765` only. It cannot be reached from your
+network or the public internet.
+
+## Kill switch
+
+Click **Engage** on the Status page, or run:
+
+```
+touch STOP
+```
+
+Either creates a `STOP` file at the project root. The bot halts on its next
+loop iteration. Click **Release** or `rm STOP` to resume.
 
 ## Fee math reference
 
-Polymarket US publishes a coefficient-based fee schedule effective 2026-04-03.
-Per-contract fee scales with `p * (1 - p)`, which makes fees lowest at price
-extremes and highest at $0.50.
+Polymarket US publishes a coefficient-based fee schedule effective
+2026-04-03. Per-contract fee scales with `p * (1 - p)`.
 
 ```
 taker_fee_per_contract  = theta_taker  * p * (1 - p)
@@ -116,34 +116,31 @@ Current coefficients (see `config/default.toml`):
 
 At p = 0.50, taker fee per 100 contracts = $1.25. At p = 0.10, it is $0.45.
 
-## Kill switch
-
-Create a file named `STOP` at the project root to halt trading on the next
-loop iteration.
-
-```
-touch STOP      # halt
-rm STOP         # resume
-```
-
-The `STOP` file is gitignored. Do not track it.
-
 ## Directory layout
 
 ```
 polymarket-bot/
-├── config/default.toml       caps, limits, fee coefficients
-├── src/polybot/              package code
-├── scripts/test_connection.py  Phase 0 connection check
-├── tests/                    unit tests for pure logic
-└── data/                     sqlite db (gitignored)
+├── config/default.toml            caps, limits, fee coefficients
+├── src/polybot/
+│   ├── secrets.py                 keychain-backed secret storage
+│   ├── client.py                  thin wrapper around polymarket-us SDK
+│   ├── fees.py, edge.py, risk.py  pure logic (unit tested)
+│   ├── storage.py, journal.py     SQLite schema + writers
+│   ├── strategies/arb.py          Phase 1 scanner
+│   └── dashboard/                 FastAPI app, templates, static
+├── scripts/
+│   ├── dashboard.py               main entry point
+│   └── test_connection.py         CLI fallback (no dashboard)
+├── tests/                         unit tests for pure logic
+└── data/                          sqlite db (gitignored)
 ```
 
 ## Safety invariants
 
 - `mode.dry_run = true` until Phase 3.
 - `mode.autonomous = false` always, until Phase 4 criteria are met.
-- Credentials never leave `.env`. Never log them.
-- All trades flow through `polybot.risk.check_trade` before execution.
+- Keys live only in your OS keychain. Never logged, never written to disk.
+- Every trade flows through `polybot.risk.check_trade` before execution.
 - WebSockets for real-time data. REST only for setup and one-off queries.
   The REST rate limit is 60 requests per minute.
+- Dashboard binds to `127.0.0.1` only. Token auth required.

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}— setup{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Credentials</h2>
+  <p class="muted">
+    Stored in your OS keychain (macOS Keychain on Mac). Never written to disk
+    in plain text. Generate Polymarket keys at
+    <a href="https://polymarket.us/developer" target="_blank" rel="noopener">polymarket.us/developer</a>.
+  </p>
+
+  <dl class="status-list">
+    <dt>Polymarket key id</dt>
+    <dd>{{ polymarket_key_id }}</dd>
+    <dt>Polymarket secret</dt>
+    <dd>{{ "stored" if polymarket_secret_set else "(not set)" }}</dd>
+    <dt>Anthropic key</dt>
+    <dd>{{ "stored" if anthropic_set else "(not set)" }}</dd>
+  </dl>
+
+  <form hx-post="/setup/save" hx-target="#save-result" hx-swap="innerHTML">
+    <label>
+      Polymarket key id
+      <input type="text" name="polymarket_key_id" autocomplete="off" placeholder="01234567-89ab-cdef-0123-456789abcdef">
+    </label>
+    <label>
+      Polymarket secret key
+      <input type="password" name="polymarket_secret_key" autocomplete="off" placeholder="base64 secret">
+    </label>
+    <label>
+      Anthropic api key
+      <input type="password" name="anthropic_api_key" autocomplete="off" placeholder="sk-ant-...">
+    </label>
+    <button type="submit">Save to keychain</button>
+  </form>
+  <div id="save-result" class="result"></div>
+</section>
+
+<section class="card">
+  <h2>Test connection</h2>
+  <p class="muted">Authenticates and reads your account balance. No trades.</p>
+  <button hx-post="/setup/test" hx-target="#test-result" hx-swap="innerHTML"
+          {% if not polymarket_ready %}disabled{% endif %}>
+    Test
+  </button>
+  <div id="test-result" class="result"></div>
+</section>
+
+<section class="card danger">
+  <h2>Danger</h2>
+  <button hx-post="/setup/clear-polymarket" hx-target="#save-result"
+          hx-confirm="Remove Polymarket credentials from keychain?">
+    Clear Polymarket credentials
+  </button>
+</section>
+{% endblock %}

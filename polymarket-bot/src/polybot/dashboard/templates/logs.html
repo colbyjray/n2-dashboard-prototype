@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}— logs{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Recent log lines</h2>
+  {% if not lines %}
+    <p class="muted">No log file yet. The bot writes to <code>logs/polybot.log</code>.</p>
+  {% else %}
+    <pre class="logs">{% for line in lines %}{{ line }}{% endfor %}</pre>
+  {% endif %}
+</section>
+{% endblock %}

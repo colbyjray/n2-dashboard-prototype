@@ -1,0 +1,13 @@
+{% if not ready %}
+<div class="error">{{ error }}</div>
+{% else %}
+<dl class="status-list">
+  <dt>Balance</dt>
+  <dd><pre>{{ balance }}</pre></dd>
+  <dt>Open positions</dt>
+  <dd><pre>{{ positions }}</pre></dd>
+  <dt>Open orders</dt>
+  <dd><pre>{{ orders }}</pre></dd>
+</dl>
+<p class="muted">Refreshes every 5 seconds.</p>
+{% endif %}
