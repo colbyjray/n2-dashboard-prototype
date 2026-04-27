@@ -42,9 +42,27 @@
 {% endif %}
 
 {% if not quotes %}
+  {% if status.cycle_count == 0 %}
   <p class="muted" style="margin-top:1rem;">
-    No events scanned yet. {% if status.state == 'idle' or status.state == 'stopped' %}Click <strong>Start scanner</strong> above.{% else %}Waiting for first cycle.{% endif %}
+    {% if status.state == 'idle' or status.state == 'stopped' %}Scanner not running. Click <strong>Start scanner</strong>.{% else %}Waiting for first cycle...{% endif %}
   </p>
+  {% else %}
+  <div class="card" style="margin-top:1rem; background: var(--panel-2);">
+    <h3>No quotes this cycle. Funnel breakdown:</h3>
+    <dl class="status-list" style="margin-top:0.5rem;">
+      <dt>Events returned by API</dt><dd class="mono">{{ status.events_returned }}</dd>
+      <dt>Skipped (no outcome markets)</dt><dd class="mono">{{ status.events_skipped_no_markets }}</dd>
+      <dt>Had 2+ markets</dt><dd class="mono">{{ status.events_with_markets }}</dd>
+      <dt>Skipped (no valid asks)</dt><dd class="mono">{{ status.events_skipped_one_leg }}</dd>
+      <dt>Produced a quote</dt><dd class="mono">{{ status.events_with_valid_bbo }}</dd>
+    </dl>
+    <p class="muted small" style="margin-top:0.75rem;">
+      Most likely cause if "events returned" is 0: invite-only beta has few open events right now.
+      If markets count is low: events lack 2+ outcome markets. If "no valid asks" is high: books are
+      one-sided (bids only), common for thin sports markets.
+    </p>
+  </div>
+  {% endif %}
 {% else %}
 <table class="data" style="margin-top:1rem;">
   <thead>

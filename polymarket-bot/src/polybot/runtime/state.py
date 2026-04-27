@@ -35,6 +35,12 @@ class ScannerStatus:
     cycle_count: int = 0
     watched_events: int = 0
     candidates_above_threshold: int = 0
+    # Funnel counters from the last cycle, for debugging empty results.
+    events_returned: int = 0
+    events_with_markets: int = 0
+    events_with_valid_bbo: int = 0
+    events_skipped_no_markets: int = 0
+    events_skipped_one_leg: int = 0
 
 
 class SharedState:

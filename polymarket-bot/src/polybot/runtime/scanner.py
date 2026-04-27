@@ -85,6 +85,24 @@ async def _list_top_events(client: object, top_n: int) -> list[object]:
         return []
 
 
+async def _markets_for_event(client: object, event_slug: str) -> list[object]:
+    """Fallback when events.list doesn't embed the markets list."""
+    try:
+        from polymarket_us.types.markets import MarketsListParams
+
+        params = MarketsListParams(
+            eventSlug=[event_slug],
+            active=True,
+            closed=False,
+            limit=20,
+        )
+        resp = await asyncio.to_thread(client.markets.list, params)
+        return list(_get(resp, "markets") or [])
+    except Exception as exc:
+        logger.warning("markets.list for %s failed: %s", event_slug, exc)
+        return []
+
+
 def _compute_edge(
     legs_best_ask: list[float],
     cfg: ScannerConfig,
@@ -100,15 +118,37 @@ def _compute_edge(
     return total_ask, total_fee, edge
 
 
-async def _scan_once(client: object, cfg: ScannerConfig) -> tuple[list[EventQuote], int]:
+@dataclass
+class FunnelCounts:
+    events_returned: int = 0
+    events_with_markets: int = 0
+    events_with_valid_bbo: int = 0
+    events_skipped_no_markets: int = 0
+    events_skipped_one_leg: int = 0
+
+
+async def _scan_once(
+    client: object,
+    cfg: ScannerConfig,
+) -> tuple[list[EventQuote], int, FunnelCounts]:
     events = await _list_top_events(client, cfg.top_n_events)
     quotes: list[EventQuote] = []
     candidates_above_threshold = 0
+    funnel = FunnelCounts(events_returned=len(events))
 
     for ev in events:
+        event_slug = str(_get(ev, "slug") or "")
         markets = list(_get(ev, "markets") or [])
+
+        # Fall back to markets.list when the embedded list is empty.
+        if len(markets) < 2 and event_slug:
+            markets = await _markets_for_event(client, event_slug)
+
         if len(markets) < 2:
+            funnel.events_skipped_no_markets += 1
             continue
+
+        funnel.events_with_markets += 1
 
         # Fetch BBO in parallel per leg.
         slugs = [str(_get(m, "slug") or "") for m in markets]
@@ -138,7 +178,10 @@ async def _scan_once(client: object, cfg: ScannerConfig) -> tuple[list[EventQuot
             legs_min_size.append(int(ask_depth or 0))
 
         if len(legs) < 2:
+            funnel.events_skipped_one_leg += 1
             continue
+
+        funnel.events_with_valid_bbo += 1
 
         total_ask, total_fee, edge = _compute_edge(legs_best_ask, cfg)
         edge_bps = int(round(edge * 10_000))
@@ -147,7 +190,7 @@ async def _scan_once(client: object, cfg: ScannerConfig) -> tuple[list[EventQuot
 
         quote = EventQuote(
             event_id=int(_get(ev, "id") or 0),
-            event_slug=str(_get(ev, "slug") or ""),
+            event_slug=event_slug,
             title=str(_get(ev, "title") or ""),
             market_count=len(legs),
             total_ask=total_ask,
@@ -164,7 +207,15 @@ async def _scan_once(client: object, cfg: ScannerConfig) -> tuple[list[EventQuot
         if edge_bps >= cfg.min_edge_bps_to_log:
             candidates_above_threshold += 1
 
-    return quotes, candidates_above_threshold
+    logger.info(
+        "scan: events=%d with_markets=%d valid_bbo=%d quotes=%d",
+        funnel.events_returned,
+        funnel.events_with_markets,
+        funnel.events_with_valid_bbo,
+        len(quotes),
+    )
+
+    return quotes, candidates_above_threshold, funnel
 
 
 def _log_candidate(conn: sqlite3.Connection, q: EventQuote) -> None:
@@ -240,7 +291,7 @@ class Scanner:
                 key_id=creds.polymarket_key_id or "",
                 secret_key=creds.polymarket_secret_key or "",
             )
-            quotes, candidates = await _scan_once(client, self.cfg)
+            quotes, candidates, funnel = await _scan_once(client, self.cfg)
             await SHARED.replace_events(quotes)
 
             if candidates:
@@ -260,6 +311,11 @@ class Scanner:
                 cycle_count=(await self._next_cycle_count()),
                 watched_events=len(quotes),
                 candidates_above_threshold=candidates,
+                events_returned=funnel.events_returned,
+                events_with_markets=funnel.events_with_markets,
+                events_with_valid_bbo=funnel.events_with_valid_bbo,
+                events_skipped_no_markets=funnel.events_skipped_no_markets,
+                events_skipped_one_leg=funnel.events_skipped_one_leg,
                 last_error="",
             )
         except Exception as exc:
