@@ -4,8 +4,11 @@
 <section class="card">
   <h2>Decision feed</h2>
   <p class="muted">
-    Phase 1 fills this in. Every arb candidate the scanner logs will show
-    up here with edge, sanity verdict, and outcome.
+    Every candidate the scanner has logged. Sorted newest first. The bot
+    has not placed any of these — Phase 3 turns trading on.
   </p>
+  <div id="decisions-data" hx-get="/decisions/data" hx-trigger="load, every 10s" hx-swap="innerHTML">
+    <p class="muted">loading...</p>
+  </div>
 </section>
 {% endblock %}

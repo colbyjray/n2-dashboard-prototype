@@ -1,0 +1,85 @@
+{% macro edge_class(bps) %}
+  {%- if bps >= 100 -%}edge-strong
+  {%- elif bps >= 25 -%}edge-positive
+  {%- elif bps >= 0 -%}edge-zero
+  {%- else -%}edge-negative
+  {%- endif -%}
+{% endmacro %}
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-label">scanner</div>
+    <div class="kpi-value status-{{ status.state }}">{{ status.state }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">events watched</div>
+    <div class="kpi-value">{{ status.watched_events }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">cycles</div>
+    <div class="kpi-value">{{ status.cycle_count }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">last cycle</div>
+    <div class="kpi-value mono small">{{ status.last_run_at or "—" }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">cycle ms</div>
+    <div class="kpi-value">{{ status.last_run_duration_ms }}</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">best edge</div>
+    <div class="kpi-value {{ edge_class(best.edge_bps) if best else '' }}">
+      {{ "{:+d} bps".format(best.edge_bps) if best else "—" }}
+    </div>
+  </div>
+</div>
+
+{% if status.last_error %}
+<div class="error" style="margin-top:1rem;">
+  <strong>Scanner error:</strong> {{ status.last_error }}
+</div>
+{% endif %}
+
+{% if not quotes %}
+  <p class="muted" style="margin-top:1rem;">
+    No events scanned yet. {% if status.state == 'idle' or status.state == 'stopped' %}Click <strong>Start scanner</strong> above.{% else %}Waiting for first cycle.{% endif %}
+  </p>
+{% else %}
+<table class="data" style="margin-top:1rem;">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Event</th>
+      <th>Legs</th>
+      <th>&Sigma; ask</th>
+      <th>fees</th>
+      <th>edge</th>
+      <th>min size</th>
+      <th>notional</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for q in quotes %}
+    <tr class="{{ edge_class(q.edge_bps) }}-row">
+      <td class="mono">{{ loop.index }}</td>
+      <td>
+        <div class="event-title">{{ q.title or q.event_slug }}</div>
+        <div class="event-legs">
+          {%- for leg in q.legs -%}
+            <span class="leg">{{ leg.outcome }} <span class="leg-px">{{ "%.4f"|format(leg.best_ask) }}</span></span>
+            {% if not loop.last %}+{% endif %}
+          {%- endfor -%}
+        </div>
+      </td>
+      <td class="mono">{{ q.market_count }}</td>
+      <td class="mono">{{ "%.4f"|format(q.total_ask) }}</td>
+      <td class="mono">{{ "%.4f"|format(q.total_fee) }}</td>
+      <td class="mono {{ edge_class(q.edge_bps) }}">{{ "{:+d}".format(q.edge_bps) }} bps</td>
+      <td class="mono">{{ q.min_size }}</td>
+      <td class="mono">{{ "%.2f"|format(q.notional_usdc) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}

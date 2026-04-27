@@ -1,0 +1,40 @@
+{% if not rows %}
+  <p class="muted">No decisions logged yet. The scanner writes here once it finds candidates.</p>
+{% else %}
+<table class="data">
+  <thead>
+    <tr>
+      <th>When</th>
+      <th>Event</th>
+      <th>Legs</th>
+      <th>&Sigma; ask</th>
+      <th>min size</th>
+      <th>edge</th>
+      <th>verdict</th>
+      <th>placed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td class="mono small">{{ r['ts'] }}</td>
+      <td>
+        <div class="event-title">{{ r['market_question'] or r['market_id'] }}</div>
+        <div class="muted small">{{ r['reasoning'] }}</div>
+      </td>
+      <td class="mono">{{ r['side'] }}</td>
+      <td class="mono">{{ "%.4f"|format(r['price'] or 0.0) }}</td>
+      <td class="mono">{{ r['size'] }}</td>
+      <td class="mono
+        {%- if r['edge_bps'] >= 100 %} edge-strong
+        {%- elif r['edge_bps'] >= 25 %} edge-positive
+        {%- elif r['edge_bps'] >= 0 %} edge-zero
+        {%- else %} edge-negative
+        {%- endif %}">{{ "{:+d}".format(r['edge_bps']) }} bps</td>
+      <td class="mono small">{{ r['sanity_verdict'] or '—' }}</td>
+      <td class="mono">{{ "yes" if r['placed'] else "no" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}

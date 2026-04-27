@@ -65,3 +65,16 @@ def init_db(path: str | Path) -> None:
         conn.commit()
     finally:
         conn.close()
+
+
+def list_recent_decisions(path: str | Path, limit: int = 200) -> list[sqlite3.Row]:
+    if not Path(path).exists():
+        return []
+    conn = connect(path)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM decisions ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+        return list(rows)
+    finally:
+        conn.close()

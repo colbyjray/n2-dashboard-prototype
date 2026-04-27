@@ -2,10 +2,20 @@
 {% block title %}— markets{% endblock %}
 {% block content %}
 <section class="card">
-  <h2>Markets watched</h2>
+  <div class="card-head">
+    <h2>Live arb scanner</h2>
+    <div class="actions">
+      <button class="btn-secondary" hx-post="/markets/scanner/start" hx-swap="none">Start scanner</button>
+      <button class="btn-ghost" hx-post="/markets/scanner/stop" hx-swap="none">Stop</button>
+    </div>
+  </div>
   <p class="muted">
-    Phase 1 fills this in. Once the scanner is running, you'll see top-N
-    markets by liquidity, YES and NO best ask, and the computed arb edge.
+    Polls top events by liquidity, sums best asks across all outcome legs,
+    subtracts taker fees, and surfaces any combination where the math
+    clears $1.00. Read only. No orders are placed.
   </p>
+  <div id="markets-data" hx-get="/markets/data" hx-trigger="load, every 5s" hx-swap="innerHTML">
+    <p class="muted">loading...</p>
+  </div>
 </section>
 {% endblock %}

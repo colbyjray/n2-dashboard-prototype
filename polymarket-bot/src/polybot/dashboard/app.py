@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -11,6 +13,7 @@ from fastapi.templating import Jinja2Templates
 
 from polybot.dashboard.auth import COOKIE_MAX_AGE, COOKIE_NAME, is_valid_token
 from polybot.dashboard.routes import decisions, history, logs, markets, pnl, setup, status
+from polybot.runtime.scanner import ScannerConfig, get_or_create_scanner
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +22,23 @@ TEMPLATES = Jinja2Templates(directory=str(PKG_DIR / "templates"))
 STATIC_DIR = PKG_DIR / "static"
 
 
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
+    scanner = get_or_create_scanner(ScannerConfig())
+    await scanner.start()
+    try:
+        yield
+    finally:
+        await scanner.stop()
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title="polybot dashboard", docs_url=None, redoc_url=None)
+    app = FastAPI(
+        title="polybot dashboard",
+        docs_url=None,
+        redoc_url=None,
+        lifespan=_lifespan,
+    )
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
     app.include_router(setup.router)
