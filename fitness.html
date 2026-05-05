@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="fitness.css">
+</head>
+<body>
+    <header class="app-header">
+        <h1>Fitness Tracker</h1>
+        <nav class="tabs" role="tablist">
+            <button class="tab active" data-tab="goal" role="tab">Goal</button>
+            <button class="tab" data-tab="weight" role="tab">Weight</button>
+            <button class="tab" data-tab="workouts" role="tab">Workouts</button>
+            <button class="tab" data-tab="settings" role="tab">Settings</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ============ GOAL ============ -->
+        <section id="tab-goal" class="tab-panel active">
+            <div class="card goal-summary">
+                <div class="goal-grid">
+                    <div class="stat">
+                        <div class="stat-label">Current</div>
+                        <div class="stat-value" id="stat-current">—</div>
+                        <div class="stat-unit" id="stat-current-unit"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Target</div>
+                        <div class="stat-value" id="stat-target">—</div>
+                        <div class="stat-unit" id="stat-target-unit"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">To Go</div>
+                        <div class="stat-value" id="stat-togo">—</div>
+                        <div class="stat-unit" id="stat-togo-unit"></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Days Left</div>
+                        <div class="stat-value" id="stat-days">—</div>
+                        <div class="stat-unit">days</div>
+                    </div>
+                </div>
+
+                <div class="progress-wrap">
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-meta">
+                        <span id="progress-pct">0%</span>
+                        <span id="progress-pace">—</span>
+                    </div>
+                </div>
+
+                <p class="goal-note" id="goal-note">Set your starting weight in Settings to get started.</p>
+            </div>
+
+            <div class="card">
+                <h2>Workout Streak</h2>
+                <div class="streak-grid">
+                    <div class="stat">
+                        <div class="stat-label">This Week</div>
+                        <div class="stat-value" id="stat-week-workouts">0</div>
+                        <div class="stat-unit">sessions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Last 30 Days</div>
+                        <div class="stat-value" id="stat-month-workouts">0</div>
+                        <div class="stat-unit">sessions</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Total Volume (30d)</div>
+                        <div class="stat-value" id="stat-month-volume">0</div>
+                        <div class="stat-unit" id="stat-volume-unit">lb·reps</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ WEIGHT ============ -->
+        <section id="tab-weight" class="tab-panel">
+            <div class="card">
+                <h2>Log Weight</h2>
+                <form id="weight-form" class="form-row">
+                    <label>
+                        Date
+                        <input type="date" id="weight-date" required>
+                    </label>
+                    <label>
+                        Weight
+                        <input type="number" id="weight-value" step="0.1" min="0" required placeholder="e.g. 185.4">
+                    </label>
+                    <button type="submit" class="btn-primary">Add Entry</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Trend</h2>
+                <div id="chart-wrap">
+                    <svg id="weight-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
+                    <p class="empty" id="chart-empty">No entries yet — log your first weight above.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>History</h2>
+                <table class="data-table" id="weight-table">
+                    <thead>
+                        <tr><th>Date</th><th>Weight</th><th>Change</th><th></th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <p class="empty" id="weight-empty">No entries yet.</p>
+            </div>
+        </section>
+
+        <!-- ============ WORKOUTS ============ -->
+        <section id="tab-workouts" class="tab-panel">
+            <div class="card">
+                <h2>Log Workout</h2>
+                <form id="workout-form">
+                    <div class="form-row">
+                        <label>
+                            Date
+                            <input type="date" id="w-date" required>
+                        </label>
+                        <label>
+                            Category
+                            <select id="w-category" required>
+                                <option value="Barbell">Barbell</option>
+                                <option value="Dumbbell">Dumbbell</option>
+                                <option value="Pushups">Pushups</option>
+                                <option value="Sit-ups">Sit-ups</option>
+                                <option value="Bodyweight">Bodyweight</option>
+                            </select>
+                        </label>
+                        <label>
+                            Exercise
+                            <input type="text" id="w-exercise" required placeholder="e.g. Bench Press" list="exercise-suggestions">
+                            <datalist id="exercise-suggestions">
+                                <option value="Bench Press">
+                                <option value="Back Squat">
+                                <option value="Deadlift">
+                                <option value="Overhead Press">
+                                <option value="Barbell Row">
+                                <option value="Dumbbell Curl">
+                                <option value="Dumbbell Shoulder Press">
+                                <option value="Goblet Squat">
+                                <option value="Pushups">
+                                <option value="Sit-ups">
+                                <option value="Plank">
+                                <option value="Pull-ups">
+                                <option value="Lunges">
+                                <option value="Burpees">
+                            </datalist>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>
+                            Sets
+                            <input type="number" id="w-sets" min="1" required value="3">
+                        </label>
+                        <label>
+                            Reps / set
+                            <input type="number" id="w-reps" min="1" required value="10">
+                        </label>
+                        <label>
+                            Weight <span class="hint">(0 for bodyweight)</span>
+                            <input type="number" id="w-weight" min="0" step="0.5" value="0">
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label class="grow">
+                            Notes
+                            <input type="text" id="w-notes" placeholder="optional">
+                        </label>
+                        <button type="submit" class="btn-primary">Add Exercise</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>History</h2>
+                <div id="workout-list"></div>
+                <p class="empty" id="workout-empty">No workouts logged yet.</p>
+            </div>
+        </section>
+
+        <!-- ============ SETTINGS ============ -->
+        <section id="tab-settings" class="tab-panel">
+            <div class="card">
+                <h2>Goal Settings</h2>
+                <form id="settings-form">
+                    <div class="form-row">
+                        <label>
+                            Starting Weight
+                            <input type="number" id="s-start" step="0.1" min="0" required>
+                        </label>
+                        <label>
+                            Target Loss
+                            <input type="number" id="s-loss" step="0.1" min="0" required>
+                        </label>
+                        <label>
+                            Target Date
+                            <input type="date" id="s-date" required>
+                        </label>
+                        <label>
+                            Units
+                            <select id="s-units">
+                                <option value="lb">Pounds (lb)</option>
+                                <option value="kg">Kilograms (kg)</option>
+                            </select>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary">Save</button>
+                    <span id="settings-saved" class="saved-flash"></span>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Data</h2>
+                <p class="hint">Everything is saved locally in your browser. Export to back up.</p>
+                <div class="form-row">
+                    <button type="button" class="btn-secondary" id="export-btn">Export JSON</button>
+                    <label class="btn-secondary file-btn">
+                        Import JSON
+                        <input type="file" id="import-input" accept="application/json" hidden>
+                    </label>
+                    <button type="button" class="btn-danger" id="reset-btn">Reset All Data</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="fitness.js"></script>
+</body>
+</html>
