@@ -3,109 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness Tracker</title>
+    <title>FORGE — Workout Tracker</title>
     <link rel="stylesheet" href="fitness.css">
 </head>
 <body>
-    <header class="app-header">
-        <h1>Fitness Tracker</h1>
-        <nav class="tabs" role="tablist">
-            <button class="tab active" data-tab="goal" role="tab">Goal</button>
-            <button class="tab" data-tab="weight" role="tab">Weight</button>
-            <button class="tab" data-tab="workouts" role="tab">Workouts</button>
-            <button class="tab" data-tab="settings" role="tab">Settings</button>
-        </nav>
+    <header class="top-bar">
+        <div class="brand">
+            <svg viewBox="0 0 24 24" class="brand-icon" aria-hidden="true">
+                <path d="M4 9h2v6H4zM18 9h2v6h-2zM7 7h2v10H7zM15 7h2v10h-2zM10 11h4v2h-4z" fill="currentColor"/>
+            </svg>
+            <span>FORGE</span>
+        </div>
+        <div class="streak-badge" id="streak-badge" title="Day streak">
+            <svg viewBox="0 0 24 24" class="flame-icon" aria-hidden="true">
+                <path d="M12 2s4 4 4 8c0 2.5-2 4-4 4s-4-1.5-4-4c0-1.5 1-3 1-3s-3 2-3 6a6 6 0 0 0 12 0c0-5-6-11-6-11z" fill="currentColor"/>
+            </svg>
+            <span id="streak-count">0</span>
+        </div>
     </header>
 
     <main>
-        <!-- ============ GOAL ============ -->
-        <section id="tab-goal" class="tab-panel active">
-            <div class="card goal-summary">
-                <div class="goal-grid">
-                    <div class="stat">
-                        <div class="stat-label">Current</div>
-                        <div class="stat-value" id="stat-current">—</div>
-                        <div class="stat-unit" id="stat-current-unit"></div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Target</div>
-                        <div class="stat-value" id="stat-target">—</div>
-                        <div class="stat-unit" id="stat-target-unit"></div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">To Go</div>
-                        <div class="stat-value" id="stat-togo">—</div>
-                        <div class="stat-unit" id="stat-togo-unit"></div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Days Left</div>
-                        <div class="stat-value" id="stat-days">—</div>
-                        <div class="stat-unit">days</div>
+        <!-- ============ TODAY ============ -->
+        <section id="tab-today" class="tab-panel active">
+            <!-- Goal banner -->
+            <div class="goal-banner card-grad">
+                <div class="goal-ring-wrap">
+                    <svg class="ring" viewBox="0 0 80 80" aria-hidden="true">
+                        <circle class="ring-track" cx="40" cy="40" r="34"/>
+                        <circle class="ring-fill" id="goal-ring" cx="40" cy="40" r="34"/>
+                    </svg>
+                    <div class="ring-center">
+                        <div class="ring-pct" id="goal-ring-pct">0%</div>
                     </div>
                 </div>
+                <div class="goal-banner-info">
+                    <div class="goal-line"><strong id="goal-togo">—</strong> <span id="goal-togo-unit">lb</span> to go</div>
+                    <div class="goal-sub"><span id="goal-days">—</span> days until <span id="goal-target-date">—</span></div>
+                    <div class="goal-pace" id="goal-pace">Set your goal in Settings</div>
+                </div>
+            </div>
 
-                <div class="progress-wrap">
-                    <div class="progress-track">
-                        <div class="progress-fill" id="progress-fill"></div>
+            <!-- Today's workout hero -->
+            <div class="workout-hero" id="workout-hero">
+                <div class="hero-header">
+                    <div class="hero-meta">
+                        <div class="hero-date" id="hero-date">—</div>
+                        <div class="hero-day-num" id="hero-day-num">DAY 1</div>
                     </div>
-                    <div class="progress-meta">
-                        <span id="progress-pct">0%</span>
-                        <span id="progress-pace">—</span>
-                    </div>
+                    <h2 class="hero-title" id="hero-title">UPPER PUSH</h2>
                 </div>
 
-                <p class="goal-note" id="goal-note">Set your starting weight in Settings to get started.</p>
+                <div class="hero-progress">
+                    <div class="hero-progress-bar"><div class="hero-progress-fill" id="hero-progress-fill"></div></div>
+                    <div class="hero-progress-meta">
+                        <span id="hero-completed-count">0 / 0</span>
+                        <span id="hero-status">Let's go</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercise list -->
+            <div class="exercise-list" id="exercise-list"></div>
+
+            <!-- Rest day card (hidden by default) -->
+            <div class="rest-card" id="rest-card" hidden>
+                <div class="rest-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36A5.5 5.5 0 0 1 12 3z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <h2>REST DAY</h2>
+                <p>Recovery is part of the program. Hydrate, stretch, and sleep well.</p>
+                <button type="button" class="btn-ghost" id="skip-rest-btn">I want to work out anyway</button>
+            </div>
+
+            <!-- Action button -->
+            <button type="button" class="btn-finish" id="finish-btn" hidden>FINISH WORKOUT</button>
+
+            <!-- Quick weigh-in -->
+            <div class="weigh-in-card">
+                <div class="weigh-in-header">
+                    <span>Today's weigh-in</span>
+                    <span class="weigh-in-status" id="weigh-in-status"></span>
+                </div>
+                <form id="weight-form" class="weigh-in-row">
+                    <input type="number" id="weight-value" step="0.1" min="0" placeholder="0.0" inputmode="decimal">
+                    <span class="weigh-in-unit" id="weigh-in-unit">lb</span>
+                    <button type="submit" class="btn-primary">Log</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ============ PROGRESS ============ -->
+        <section id="tab-progress" class="tab-panel">
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-label">Current</div>
+                    <div class="stat-value"><span id="stat-current">—</span><span class="stat-suffix" id="stat-current-unit"></span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Lost</div>
+                    <div class="stat-value accent"><span id="stat-lost">—</span><span class="stat-suffix" id="stat-lost-unit"></span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Target</div>
+                    <div class="stat-value"><span id="stat-target">—</span><span class="stat-suffix" id="stat-target-unit"></span></div>
+                </div>
             </div>
 
             <div class="card">
-                <h2>Workout Streak</h2>
-                <div class="streak-grid">
-                    <div class="stat">
-                        <div class="stat-label">This Week</div>
-                        <div class="stat-value" id="stat-week-workouts">0</div>
-                        <div class="stat-unit">sessions</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Last 30 Days</div>
-                        <div class="stat-value" id="stat-month-workouts">0</div>
-                        <div class="stat-unit">sessions</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Total Volume (30d)</div>
-                        <div class="stat-value" id="stat-month-volume">0</div>
-                        <div class="stat-unit" id="stat-volume-unit">lb·reps</div>
-                    </div>
+                <div class="card-head">
+                    <h3>Weight Trend</h3>
+                </div>
+                <div id="chart-wrap">
+                    <svg id="weight-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
+                    <p class="empty" id="chart-empty">Log your first weigh-in to see your trend.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h3>Workout Calendar</h3>
+                    <span class="card-meta" id="calendar-meta">Last 12 weeks</span>
+                </div>
+                <div class="heatmap" id="heatmap"></div>
+                <div class="heatmap-legend">
+                    <span>Less</span>
+                    <span class="legend-cell l0"></span>
+                    <span class="legend-cell l1"></span>
+                    <span class="legend-cell l2"></span>
+                    <span class="legend-cell l3"></span>
+                    <span>Done</span>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-label">This week</div>
+                    <div class="stat-value"><span id="stat-week">0</span><span class="stat-suffix">workouts</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Last 30 days</div>
+                    <div class="stat-value"><span id="stat-month">0</span><span class="stat-suffix">workouts</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total volume</div>
+                    <div class="stat-value"><span id="stat-volume">0</span><span class="stat-suffix" id="stat-volume-unit">lb·reps</span></div>
                 </div>
             </div>
         </section>
 
-        <!-- ============ WEIGHT ============ -->
-        <section id="tab-weight" class="tab-panel">
+        <!-- ============ HISTORY ============ -->
+        <section id="tab-history" class="tab-panel">
             <div class="card">
-                <h2>Log Weight</h2>
-                <form id="weight-form" class="form-row">
-                    <label>
-                        Date
-                        <input type="date" id="weight-date" required>
-                    </label>
-                    <label>
-                        Weight
-                        <input type="number" id="weight-value" step="0.1" min="0" required placeholder="e.g. 185.4">
-                    </label>
-                    <button type="submit" class="btn-primary">Add Entry</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <h2>Trend</h2>
-                <div id="chart-wrap">
-                    <svg id="weight-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
-                    <p class="empty" id="chart-empty">No entries yet — log your first weight above.</p>
+                <div class="card-head">
+                    <h3>Weight Log</h3>
                 </div>
-            </div>
-
-            <div class="card">
-                <h2>History</h2>
                 <table class="data-table" id="weight-table">
                     <thead>
                         <tr><th>Date</th><th>Weight</th><th>Change</th><th></th></tr>
@@ -114,104 +167,44 @@
                 </table>
                 <p class="empty" id="weight-empty">No entries yet.</p>
             </div>
-        </section>
-
-        <!-- ============ WORKOUTS ============ -->
-        <section id="tab-workouts" class="tab-panel">
-            <div class="card">
-                <h2>Log Workout</h2>
-                <form id="workout-form">
-                    <div class="form-row">
-                        <label>
-                            Date
-                            <input type="date" id="w-date" required>
-                        </label>
-                        <label>
-                            Category
-                            <select id="w-category" required>
-                                <option value="Barbell">Barbell</option>
-                                <option value="Dumbbell">Dumbbell</option>
-                                <option value="Pushups">Pushups</option>
-                                <option value="Sit-ups">Sit-ups</option>
-                                <option value="Bodyweight">Bodyweight</option>
-                            </select>
-                        </label>
-                        <label>
-                            Exercise
-                            <input type="text" id="w-exercise" required placeholder="e.g. Bench Press" list="exercise-suggestions">
-                            <datalist id="exercise-suggestions">
-                                <option value="Bench Press">
-                                <option value="Back Squat">
-                                <option value="Deadlift">
-                                <option value="Overhead Press">
-                                <option value="Barbell Row">
-                                <option value="Dumbbell Curl">
-                                <option value="Dumbbell Shoulder Press">
-                                <option value="Goblet Squat">
-                                <option value="Pushups">
-                                <option value="Sit-ups">
-                                <option value="Plank">
-                                <option value="Pull-ups">
-                                <option value="Lunges">
-                                <option value="Burpees">
-                            </datalist>
-                        </label>
-                    </div>
-                    <div class="form-row">
-                        <label>
-                            Sets
-                            <input type="number" id="w-sets" min="1" required value="3">
-                        </label>
-                        <label>
-                            Reps / set
-                            <input type="number" id="w-reps" min="1" required value="10">
-                        </label>
-                        <label>
-                            Weight <span class="hint">(0 for bodyweight)</span>
-                            <input type="number" id="w-weight" min="0" step="0.5" value="0">
-                        </label>
-                    </div>
-                    <div class="form-row">
-                        <label class="grow">
-                            Notes
-                            <input type="text" id="w-notes" placeholder="optional">
-                        </label>
-                        <button type="submit" class="btn-primary">Add Exercise</button>
-                    </div>
-                </form>
-            </div>
 
             <div class="card">
-                <h2>History</h2>
-                <div id="workout-list"></div>
-                <p class="empty" id="workout-empty">No workouts logged yet.</p>
+                <div class="card-head">
+                    <h3>Past Workouts</h3>
+                </div>
+                <div id="session-history"></div>
+                <p class="empty" id="session-empty">No completed workouts yet — finish today's to start your streak.</p>
             </div>
         </section>
 
         <!-- ============ SETTINGS ============ -->
         <section id="tab-settings" class="tab-panel">
             <div class="card">
-                <h2>Goal Settings</h2>
+                <div class="card-head"><h3>Goal</h3></div>
                 <form id="settings-form">
-                    <div class="form-row">
+                    <div class="form-grid">
                         <label>
-                            Starting Weight
+                            <span>Starting weight</span>
                             <input type="number" id="s-start" step="0.1" min="0" required>
                         </label>
                         <label>
-                            Target Loss
+                            <span>Target loss</span>
                             <input type="number" id="s-loss" step="0.1" min="0" required>
                         </label>
                         <label>
-                            Target Date
+                            <span>Target date</span>
                             <input type="date" id="s-date" required>
                         </label>
                         <label>
-                            Units
+                            <span>Units</span>
                             <select id="s-units">
                                 <option value="lb">Pounds (lb)</option>
                                 <option value="kg">Kilograms (kg)</option>
                             </select>
+                        </label>
+                        <label>
+                            <span>Program start</span>
+                            <input type="date" id="s-program-start" required>
                         </label>
                     </div>
                     <button type="submit" class="btn-primary">Save</button>
@@ -220,19 +213,44 @@
             </div>
 
             <div class="card">
-                <h2>Data</h2>
-                <p class="hint">Everything is saved locally in your browser. Export to back up.</p>
-                <div class="form-row">
-                    <button type="button" class="btn-secondary" id="export-btn">Export JSON</button>
-                    <label class="btn-secondary file-btn">
+                <div class="card-head"><h3>Program</h3></div>
+                <p class="hint">Your 7-day rotation. Day 7 is rest.</p>
+                <ol class="program-list" id="program-list"></ol>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><h3>Data</h3></div>
+                <p class="hint">Everything is saved locally in this browser. Export to back up.</p>
+                <div class="btn-row">
+                    <button type="button" class="btn-ghost" id="export-btn">Export JSON</button>
+                    <label class="btn-ghost file-btn">
                         Import JSON
                         <input type="file" id="import-input" accept="application/json" hidden>
                     </label>
-                    <button type="button" class="btn-danger" id="reset-btn">Reset All Data</button>
+                    <button type="button" class="btn-danger" id="reset-btn">Reset all data</button>
                 </div>
             </div>
         </section>
     </main>
+
+    <nav class="bottom-nav" role="tablist">
+        <button class="nav-item active" data-tab="today" role="tab">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 7v10l8 5 8-5V7l-8-5zm0 2.3 6 3.75v7.9l-6 3.75-6-3.75v-7.9L12 4.3z" fill="currentColor"/></svg>
+            <span>Today</span>
+        </button>
+        <button class="nav-item" data-tab="progress" role="tab">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17h2v4H3v-4zm4-6h2v10H7V11zm4-4h2v14h-2V7zm4 8h2v6h-2v-6zm4-12h2v18h-2V3z" fill="currentColor"/></svg>
+            <span>Progress</span>
+        </button>
+        <button class="nav-item" data-tab="history" role="tab">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7v3l4-4-4-4v3zm-1 5v5l4 2 .5-1.5L13 12V8h-1z" fill="currentColor"/></svg>
+            <span>History</span>
+        </button>
+        <button class="nav-item" data-tab="settings" role="tab">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm9.4 4-.1 2 2 1.5-1.5 3-2.4-.4-1.7 1.2-.4 2.4h-3l-.4-2.4-1.7-1.2-2.4.4-1.5-3 2-1.5-.1-2 .1-2-2-1.5 1.5-3 2.4.4 1.7-1.2L10.5 1h3l.4 2.4 1.7 1.2 2.4-.4 1.5 3-2 1.5.1 2z" fill="currentColor"/></svg>
+            <span>Settings</span>
+        </button>
+    </nav>
 
     <script src="fitness.js"></script>
 </body>
