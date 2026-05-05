@@ -82,9 +82,12 @@
             targetDate: '2026-07-01',
             units: 'lb',
             programStart: null, // set on first save
+            calorieTarget: 0,
+            stepsTarget: 8000,
         },
-        weights: [],   // [{ id, date, value }]
-        sessions: [],  // [{ id, date, dayIndex, dayName, isRest, completedAt, exercises:[{name,category,prescribedSets,prescribedReps,actualReps,weight,done,noWeight}] }]
+        weights: [],     // [{ id, date, value }]
+        sessions: [],    // [{ id, date, dayIndex, dayName, isRest, completedAt, exercises:[...] }]
+        dailyChecks: [], // [{ date, calories, steps, sleepHours, waterCups }]
     };
 
     // ============ STORAGE ============
@@ -100,6 +103,7 @@
                         settings: { ...defaultState.settings, ...(parsed.settings || {}) },
                         weights: Array.isArray(parsed.weights) ? parsed.weights : [],
                         sessions: [],
+                        dailyChecks: [],
                     };
                 }
                 return structuredClone(defaultState);
@@ -109,6 +113,7 @@
                 settings: { ...defaultState.settings, ...(parsed.settings || {}) },
                 weights: Array.isArray(parsed.weights) ? parsed.weights : [],
                 sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+                dailyChecks: Array.isArray(parsed.dailyChecks) ? parsed.dailyChecks : [],
             };
         } catch (e) {
             console.error('Failed to load state', e);
@@ -158,6 +163,33 @@
 
     function sortedWeights() {
         return [...state.weights].sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    function getDailyCheck(isoDate) {
+        return state.dailyChecks.find((c) => c.date === isoDate) || null;
+    }
+
+    function upsertDailyCheck(isoDate, patch) {
+        let entry = state.dailyChecks.find((c) => c.date === isoDate);
+        if (!entry) {
+            entry = { date: isoDate, calories: null, steps: null, sleepHours: null, waterCups: null };
+            state.dailyChecks.push(entry);
+        }
+        Object.assign(entry, patch);
+        save();
+        return entry;
+    }
+
+    // 7-day trailing average for each weight entry, anchored on its date.
+    function rollingAvg(sorted) {
+        return sorted.map((entry, i) => {
+            const cutoff = new Date(entry.date + 'T00:00:00');
+            cutoff.setDate(cutoff.getDate() - 6);
+            const cutIso = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`;
+            const window = sorted.slice(0, i + 1).filter((w) => w.date >= cutIso);
+            const avg = window.reduce((a, b) => a + b.value, 0) / window.length;
+            return { date: entry.date, value: avg };
+        });
     }
 
     function getDayIndex(isoDate) {
@@ -446,6 +478,65 @@
         }
     }
 
+    // ============ DAILY CHECK-IN ============
+    function renderDailyCheckIn() {
+        const today = todayISO();
+        const check = getDailyCheck(today);
+        const calTarget = state.settings.calorieTarget;
+        const stepTarget = state.settings.stepsTarget;
+
+        $('#h-calories').value = check && check.calories != null ? check.calories : '';
+        $('#h-steps').value = check && check.steps != null ? check.steps : '';
+        $('#h-sleep').value = check && check.sleepHours != null ? check.sleepHours : '';
+        $('#h-water').value = check && check.waterCups != null ? check.waterCups : '';
+
+        $('#h-calories-target').textContent = calTarget > 0 ? `/ ${calTarget.toLocaleString()}` : '/ —';
+        $('#h-steps-target').textContent = stepTarget > 0 ? `/ ${stepTarget.toLocaleString()}` : '/ —';
+
+        let logged = 0;
+        if (check) {
+            if (check.calories != null) logged++;
+            if (check.steps != null) logged++;
+            if (check.sleepHours != null) logged++;
+            if (check.waterCups != null) logged++;
+        }
+        const statusEl = $('#habits-status');
+        statusEl.textContent = logged > 0 ? `${logged} of 4 logged` : 'Not logged';
+        statusEl.classList.toggle('logged', logged === 4);
+
+        const calRow = $('#h-calories').closest('.habit-row');
+        calRow.classList.remove('over', 'met');
+        if (calTarget > 0 && check && check.calories != null) {
+            if (check.calories > calTarget * 1.05) calRow.classList.add('over');
+            else if (check.calories <= calTarget) calRow.classList.add('met');
+        }
+
+        const stepRow = $('#h-steps').closest('.habit-row');
+        stepRow.classList.remove('over', 'met');
+        if (stepTarget > 0 && check && check.steps != null && check.steps >= stepTarget) {
+            stepRow.classList.add('met');
+        }
+    }
+
+    function initDailyCheckIn() {
+        const fields = [
+            { el: '#h-calories', key: 'calories', parse: (v) => parseInt(v, 10) },
+            { el: '#h-steps', key: 'steps', parse: (v) => parseInt(v, 10) },
+            { el: '#h-sleep', key: 'sleepHours', parse: (v) => parseFloat(v) },
+            { el: '#h-water', key: 'waterCups', parse: (v) => parseInt(v, 10) },
+        ];
+        fields.forEach(({ el, key, parse }) => {
+            $(el).addEventListener('change', () => {
+                const raw = $(el).value;
+                let val = raw === '' ? null : parse(raw);
+                if (val != null && (isNaN(val) || val < 0)) val = null;
+                upsertDailyCheck(todayISO(), { [key]: val });
+                renderDailyCheckIn();
+                renderWeeklySummary();
+            });
+        });
+    }
+
     function initWeightForm() {
         $('#weight-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -528,20 +619,90 @@
     }
 
     // ============ PROGRESS PANEL ============
+    function renderWeeklySummary() {
+        const today = todayISO();
+        const sevenAgo = new Date();
+        sevenAgo.setDate(sevenAgo.getDate() - 7);
+        const isoSeven = `${sevenAgo.getFullYear()}-${String(sevenAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenAgo.getDate()).padStart(2, '0')}`;
+
+        const sorted = sortedWeights();
+        const baseline = sorted.filter((w) => w.date < isoSeven).pop() || sorted[0];
+        const latest = sorted[sorted.length - 1];
+        let weightChange = null;
+        if (baseline && latest && baseline.date !== latest.date) {
+            weightChange = latest.value - baseline.value;
+        }
+
+        const wc = $('#weekly-weight-change');
+        wc.style.color = '';
+        if (weightChange == null) {
+            wc.textContent = '—';
+        } else if (weightChange < 0) {
+            wc.textContent = `↓ ${Math.abs(weightChange).toFixed(1)} ${state.settings.units}`;
+            wc.style.color = 'var(--ok)';
+        } else if (weightChange > 0) {
+            wc.textContent = `↑ ${weightChange.toFixed(1)} ${state.settings.units}`;
+            wc.style.color = 'var(--bad)';
+        } else {
+            wc.textContent = `0 ${state.settings.units}`;
+        }
+
+        const workouts = state.sessions.filter((s) =>
+            s.date >= isoSeven && s.date <= today && isSessionComplete(s) && !s.isRest
+        ).length;
+        $('#weekly-workouts').textContent = workouts;
+
+        const checks = state.dailyChecks.filter((c) => c.date >= isoSeven && c.date <= today);
+        const cals = checks.filter((c) => c.calories != null).map((c) => c.calories);
+        const steps = checks.filter((c) => c.steps != null).map((c) => c.steps);
+        $('#weekly-cal').textContent = cals.length ? Math.round(cals.reduce((a, b) => a + b, 0) / cals.length).toLocaleString() : '—';
+        $('#weekly-steps').textContent = steps.length ? Math.round(steps.reduce((a, b) => a + b, 0) / steps.length).toLocaleString() : '—';
+
+        const paceEl = $('#weekly-pace');
+        paceEl.classList.remove('on-track', 'behind', 'far-behind');
+        const { settings } = state;
+        if (!settings.startWeight || weightChange == null || !latest) {
+            paceEl.textContent = 'Need more data';
+            return;
+        }
+        const target = settings.startWeight - settings.targetLoss;
+        const toGo = latest.value - target;
+        if (toGo <= 0) {
+            paceEl.textContent = 'Goal reached';
+            paceEl.classList.add('on-track');
+            return;
+        }
+        const daysLeft = Math.max(1, daysBetween(today, settings.targetDate));
+        const requiredPerWeek = (toGo / daysLeft) * 7;
+        const actualThisWeek = -weightChange;
+        if (actualThisWeek >= requiredPerWeek * 0.9) {
+            paceEl.textContent = 'On pace';
+            paceEl.classList.add('on-track');
+        } else if (actualThisWeek > 0) {
+            paceEl.textContent = 'Behind';
+            paceEl.classList.add('behind');
+        } else {
+            paceEl.textContent = 'Off pace';
+            paceEl.classList.add('far-behind');
+        }
+    }
+
     function renderProgressStats() {
         const { settings } = state;
         const sorted = sortedWeights();
         const latest = sorted[sorted.length - 1];
         const current = latest ? latest.value : settings.startWeight;
-        const target = settings.startWeight - settings.targetLoss;
         const lost = Math.max(0, settings.startWeight - current);
 
         $('#stat-current').textContent = settings.startWeight ? fmtWeight(current) : '—';
         $('#stat-current-unit').textContent = settings.units;
         $('#stat-lost').textContent = settings.startWeight ? fmtWeight(lost) : '—';
         $('#stat-lost-unit').textContent = settings.units;
-        $('#stat-target').textContent = settings.startWeight ? fmtWeight(target) : '—';
-        $('#stat-target-unit').textContent = settings.units;
+
+        const rolling = rollingAvg(sorted);
+        const latestRolling = rolling[rolling.length - 1];
+        $('#stat-rolling').textContent = latestRolling ? fmtWeight(latestRolling.value) : '—';
+        $('#stat-rolling-unit').textContent = settings.units;
 
         // Workout stats
         const today = todayISO();
@@ -576,8 +737,10 @@
         const empty = $('#chart-empty');
         svg.innerHTML = '';
         const sorted = sortedWeights();
+        const { settings } = state;
+        const hasGoal = settings.startWeight > 0 && settings.targetLoss > 0;
 
-        if (sorted.length < 1) {
+        if (sorted.length < 1 && !hasGoal) {
             empty.style.display = '';
             svg.style.display = 'none';
             return;
@@ -589,20 +752,25 @@
         const innerW = W - padL - padR;
         const innerH = H - padT - padB;
 
-        const target = state.settings.startWeight - state.settings.targetLoss;
-        const hasGoal = state.settings.startWeight > 0 && state.settings.targetLoss > 0;
-        const values = sorted.map((w) => w.value);
-        if (hasGoal) values.push(state.settings.startWeight, target);
+        const target = settings.startWeight - settings.targetLoss;
 
+        // X-axis: program start (or first entry) → target date
+        const xStart = settings.programStart || (sorted[0] ? sorted[0].date : todayISO());
+        const xEnd = settings.targetDate || (sorted[sorted.length - 1] ? sorted[sorted.length - 1].date : todayISO());
+        const totalDays = Math.max(1, daysBetween(xStart, xEnd));
+
+        // Y-axis range
+        const values = sorted.map((w) => w.value);
+        if (hasGoal) values.push(settings.startWeight, target);
         const min = Math.min(...values) - 1;
         const max = Math.max(...values) + 1;
         const range = max - min || 1;
 
-        const startDate = sorted[0].date;
-        const endDate = sorted[sorted.length - 1].date;
-        const totalDays = daysBetween(startDate, endDate);
-
-        const xFor = (iso) => totalDays <= 0 ? padL + innerW / 2 : padL + (daysBetween(startDate, iso) / totalDays) * innerW;
+        const xFor = (iso) => {
+            const days = daysBetween(xStart, iso);
+            const clamped = Math.max(0, Math.min(totalDays, days));
+            return padL + (clamped / totalDays) * innerW;
+        };
         const yFor = (v) => padT + ((max - v) / range) * innerH;
 
         const ns = 'http://www.w3.org/2000/svg';
@@ -626,37 +794,41 @@
             svg.appendChild(label);
         }
 
-        if (hasGoal && target >= min && target <= max) {
-            const y = yFor(target);
-            const line = document.createElementNS(ns, 'line');
-            line.setAttribute('class', 'target-line');
-            line.setAttribute('x1', padL);
-            line.setAttribute('x2', W - padR);
-            line.setAttribute('y1', y);
-            line.setAttribute('y2', y);
-            svg.appendChild(line);
+        // Pace projection line: start weight on xStart → target on xEnd
+        if (hasGoal) {
+            const paceLine = document.createElementNS(ns, 'line');
+            paceLine.setAttribute('class', 'pace-line');
+            paceLine.setAttribute('x1', xFor(xStart));
+            paceLine.setAttribute('y1', yFor(settings.startWeight));
+            paceLine.setAttribute('x2', xFor(xEnd));
+            paceLine.setAttribute('y2', yFor(target));
+            svg.appendChild(paceLine);
 
-            const label = document.createElementNS(ns, 'text');
-            label.setAttribute('class', 'axis-label');
-            label.setAttribute('x', W - padR - 50);
-            label.setAttribute('y', y - 4);
-            label.setAttribute('fill', '#00d9a3');
-            label.textContent = `target ${target.toFixed(1)}`;
-            svg.appendChild(label);
+            const lbl = document.createElementNS(ns, 'text');
+            lbl.setAttribute('class', 'axis-label');
+            lbl.setAttribute('x', W - padR);
+            lbl.setAttribute('y', yFor(target) - 4);
+            lbl.setAttribute('text-anchor', 'end');
+            lbl.setAttribute('fill', '#00d9a3');
+            lbl.textContent = `target ${target.toFixed(1)}`;
+            svg.appendChild(lbl);
         }
 
         if (sorted.length >= 2) {
             const pts = sorted.map((w) => `${xFor(w.date)},${yFor(w.value)}`).join(' ');
-            const polyline = document.createElementNS(ns, 'polyline');
-            polyline.setAttribute('class', 'data-line');
-            polyline.setAttribute('points', pts);
-            svg.appendChild(polyline);
+            const dataLine = document.createElementNS(ns, 'polyline');
+            dataLine.setAttribute('class', 'data-line');
+            dataLine.setAttribute('points', pts);
+            svg.appendChild(dataLine);
 
-            const areaPts = `${xFor(sorted[0].date)},${padT + innerH} ${pts} ${xFor(sorted[sorted.length - 1].date)},${padT + innerH}`;
-            const polygon = document.createElementNS(ns, 'polygon');
-            polygon.setAttribute('class', 'data-area');
-            polygon.setAttribute('points', areaPts);
-            svg.appendChild(polygon);
+            const rolling = rollingAvg(sorted);
+            if (rolling.length >= 2) {
+                const rPts = rolling.map((w) => `${xFor(w.date)},${yFor(w.value)}`).join(' ');
+                const rLine = document.createElementNS(ns, 'polyline');
+                rLine.setAttribute('class', 'rolling-line');
+                rLine.setAttribute('points', rPts);
+                svg.appendChild(rLine);
+            }
         }
 
         sorted.forEach((w) => {
@@ -664,27 +836,28 @@
             c.setAttribute('class', 'data-point');
             c.setAttribute('cx', xFor(w.date));
             c.setAttribute('cy', yFor(w.value));
-            c.setAttribute('r', 4);
+            c.setAttribute('r', 3);
             const title = document.createElementNS(ns, 'title');
-            title.textContent = `${fmtDate(w.date)}: ${fmtWeight(w.value)} ${state.settings.units}`;
+            title.textContent = `${fmtDate(w.date)}: ${fmtWeight(w.value)} ${settings.units}`;
             c.appendChild(title);
             svg.appendChild(c);
         });
 
+        // X-axis date labels
         const lblStart = document.createElementNS(ns, 'text');
         lblStart.setAttribute('class', 'axis-label');
         lblStart.setAttribute('x', padL);
         lblStart.setAttribute('y', H - 8);
-        lblStart.textContent = fmtDate(startDate, { month: 'short', day: 'numeric' });
+        lblStart.textContent = fmtDate(xStart, { month: 'short', day: 'numeric' });
         svg.appendChild(lblStart);
 
-        if (startDate !== endDate) {
+        if (xStart !== xEnd) {
             const lblEnd = document.createElementNS(ns, 'text');
             lblEnd.setAttribute('class', 'axis-label');
             lblEnd.setAttribute('x', W - padR);
             lblEnd.setAttribute('y', H - 8);
             lblEnd.setAttribute('text-anchor', 'end');
-            lblEnd.textContent = fmtDate(endDate, { month: 'short', day: 'numeric' });
+            lblEnd.textContent = fmtDate(xEnd, { month: 'short', day: 'numeric' });
             svg.appendChild(lblEnd);
         }
     }
@@ -871,6 +1044,8 @@
         $('#s-date').value = state.settings.targetDate;
         $('#s-units').value = state.settings.units;
         $('#s-program-start').value = state.settings.programStart || todayISO();
+        $('#s-cal-target').value = state.settings.calorieTarget || '';
+        $('#s-step-target').value = state.settings.stepsTarget || '';
     }
 
     function renderProgramList() {
@@ -939,6 +1114,8 @@
             state.settings.targetDate = $('#s-date').value;
             state.settings.units = $('#s-units').value;
             state.settings.programStart = $('#s-program-start').value || todayISO();
+            state.settings.calorieTarget = parseFloat($('#s-cal-target').value) || 0;
+            state.settings.stepsTarget = parseFloat($('#s-step-target').value) || 0;
             save();
 
             const flash = $('#settings-saved');
@@ -970,6 +1147,7 @@
                         settings: { ...defaultState.settings, ...(imported.settings || {}) },
                         weights: Array.isArray(imported.weights) ? imported.weights : [],
                         sessions: Array.isArray(imported.sessions) ? imported.sessions : [],
+                        dailyChecks: Array.isArray(imported.dailyChecks) ? imported.dailyChecks : [],
                     };
                     save();
                     loadSettingsForm();
@@ -998,8 +1176,10 @@
     function renderAll() {
         renderToday();
         renderWeighIn();
+        renderDailyCheckIn();
         renderGoalBanner();
         renderStreak();
+        renderWeeklySummary();
         renderProgressStats();
         renderChart();
         renderHeatmap();
@@ -1011,6 +1191,7 @@
     initTabs();
     initFinishBtn();
     initWeightForm();
+    initDailyCheckIn();
     initSettings();
     renderProgramList();
     renderAll();

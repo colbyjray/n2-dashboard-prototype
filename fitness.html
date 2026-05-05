@@ -92,22 +92,78 @@
                     <button type="submit" class="btn-primary">Log</button>
                 </form>
             </div>
+
+            <!-- Daily habits check-in -->
+            <div class="habits-card">
+                <div class="weigh-in-header">
+                    <span>Daily habits</span>
+                    <span class="weigh-in-status" id="habits-status"></span>
+                </div>
+                <div class="habits-grid">
+                    <label class="habit-row">
+                        <span class="habit-label">Calories</span>
+                        <input type="number" id="h-calories" min="0" step="10" placeholder="0" inputmode="numeric">
+                        <span class="habit-target" id="h-calories-target">/ —</span>
+                    </label>
+                    <label class="habit-row">
+                        <span class="habit-label">Steps</span>
+                        <input type="number" id="h-steps" min="0" step="100" placeholder="0" inputmode="numeric">
+                        <span class="habit-target" id="h-steps-target">/ —</span>
+                    </label>
+                    <label class="habit-row">
+                        <span class="habit-label">Sleep</span>
+                        <input type="number" id="h-sleep" min="0" max="24" step="0.5" placeholder="0" inputmode="decimal">
+                        <span class="habit-target">hrs</span>
+                    </label>
+                    <label class="habit-row">
+                        <span class="habit-label">Water</span>
+                        <input type="number" id="h-water" min="0" step="1" placeholder="0" inputmode="numeric">
+                        <span class="habit-target">cups</span>
+                    </label>
+                </div>
+            </div>
         </section>
 
         <!-- ============ PROGRESS ============ -->
         <section id="tab-progress" class="tab-panel">
+            <!-- Weekly summary -->
+            <div class="weekly-card">
+                <div class="weekly-head">
+                    <h3>This Week</h3>
+                    <span class="weekly-pace" id="weekly-pace">—</span>
+                </div>
+                <div class="weekly-grid">
+                    <div class="weekly-stat">
+                        <div class="weekly-label">Weight change</div>
+                        <div class="weekly-value" id="weekly-weight-change">—</div>
+                    </div>
+                    <div class="weekly-stat">
+                        <div class="weekly-label">Workouts</div>
+                        <div class="weekly-value" id="weekly-workouts">0</div>
+                    </div>
+                    <div class="weekly-stat">
+                        <div class="weekly-label">Avg calories</div>
+                        <div class="weekly-value" id="weekly-cal">—</div>
+                    </div>
+                    <div class="weekly-stat">
+                        <div class="weekly-label">Avg steps</div>
+                        <div class="weekly-value" id="weekly-steps">—</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="stat-row">
                 <div class="stat-card">
                     <div class="stat-label">Current</div>
                     <div class="stat-value"><span id="stat-current">—</span><span class="stat-suffix" id="stat-current-unit"></span></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Lost</div>
-                    <div class="stat-value accent"><span id="stat-lost">—</span><span class="stat-suffix" id="stat-lost-unit"></span></div>
+                    <div class="stat-label">7-day avg</div>
+                    <div class="stat-value"><span id="stat-rolling">—</span><span class="stat-suffix" id="stat-rolling-unit"></span></div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Target</div>
-                    <div class="stat-value"><span id="stat-target">—</span><span class="stat-suffix" id="stat-target-unit"></span></div>
+                    <div class="stat-label">Lost</div>
+                    <div class="stat-value accent"><span id="stat-lost">—</span><span class="stat-suffix" id="stat-lost-unit"></span></div>
                 </div>
             </div>
 
@@ -118,6 +174,11 @@
                 <div id="chart-wrap">
                     <svg id="weight-chart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
                     <p class="empty" id="chart-empty">Log your first weigh-in to see your trend.</p>
+                </div>
+                <div class="chart-legend">
+                    <span><i class="dot daily"></i>Daily</span>
+                    <span><i class="dot rolling"></i>7-day avg</span>
+                    <span><i class="dot pace"></i>Required pace</span>
                 </div>
             </div>
 
@@ -206,10 +267,19 @@
                             <span>Program start</span>
                             <input type="date" id="s-program-start" required>
                         </label>
+                        <label>
+                            <span>Daily calorie target</span>
+                            <input type="number" id="s-cal-target" min="0" step="50" placeholder="e.g. 2000">
+                        </label>
+                        <label>
+                            <span>Daily steps target</span>
+                            <input type="number" id="s-step-target" min="0" step="500" placeholder="e.g. 8000">
+                        </label>
                     </div>
                     <button type="submit" class="btn-primary">Save</button>
                     <span id="settings-saved" class="saved-flash"></span>
                 </form>
+                <p class="hint" style="margin-top:1rem">For ~1 lb/week loss, set your calorie target around <strong>500 cal below maintenance</strong>. Rough rule: maintenance ≈ bodyweight × 14–15 (sedentary) or × 16–17 (active).</p>
             </div>
 
             <div class="card">
