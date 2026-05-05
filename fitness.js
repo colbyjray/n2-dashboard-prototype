@@ -345,7 +345,21 @@
             info.className = 'ex-info';
             const name = document.createElement('div');
             name.className = 'ex-name';
-            name.textContent = ex.name;
+            const nameText = document.createElement('span');
+            nameText.textContent = ex.name;
+            const demoBtn = document.createElement('button');
+            demoBtn.type = 'button';
+            demoBtn.className = 'ex-demo-btn';
+            demoBtn.title = `How to do ${ex.name}`;
+            demoBtn.setAttribute('aria-label', `How to do ${ex.name}`);
+            demoBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+            demoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const q = encodeURIComponent(ex.name + ' proper form');
+                window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank', 'noopener');
+            });
+            name.appendChild(nameText);
+            name.appendChild(demoBtn);
             const presc = document.createElement('div');
             presc.className = 'ex-prescribed';
             const badge = document.createElement('span');
@@ -890,7 +904,19 @@
                 ul.className = 'program-day-list';
                 day.exercises.forEach((e) => {
                     const item = document.createElement('li');
-                    item.textContent = `${e.name} — ${e.sets} × ${e.reps}`;
+                    const txt = document.createElement('span');
+                    txt.textContent = `${e.name} — ${e.sets} × ${e.reps}`;
+                    const demoBtn = document.createElement('button');
+                    demoBtn.type = 'button';
+                    demoBtn.className = 'ex-demo-btn small';
+                    demoBtn.title = `How to do ${e.name}`;
+                    demoBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+                    demoBtn.addEventListener('click', () => {
+                        const q = encodeURIComponent(e.name + ' proper form');
+                        window.open(`https://www.youtube.com/results?search_query=${q}`, '_blank', 'noopener');
+                    });
+                    item.appendChild(txt);
+                    item.appendChild(demoBtn);
                     ul.appendChild(item);
                 });
                 li.appendChild(ul);

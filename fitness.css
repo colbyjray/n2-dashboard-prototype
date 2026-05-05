@@ -392,6 +392,48 @@ main {
     font-weight: 600;
     font-size: 0.98rem;
     margin-bottom: 0.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ex-demo-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, border-color 0.15s, transform 0.05s;
+    flex-shrink: 0;
+}
+
+.ex-demo-btn svg {
+    width: 10px;
+    height: 10px;
+    margin-left: 1px;
+}
+
+.ex-demo-btn:hover {
+    background: var(--accent);
+    color: #1a0a04;
+    border-color: var(--accent);
+}
+
+.ex-demo-btn.small {
+    width: 18px;
+    height: 18px;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+
+.ex-demo-btn.small svg {
+    width: 8px;
+    height: 8px;
 }
 
 .ex-prescribed {
