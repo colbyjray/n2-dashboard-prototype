@@ -1,0 +1,88 @@
+AI News Briefing - Weekend of May 24-25, 2026
+Compiled from TLDR (AI, Main, Dev, IT, Marketing, InfoSec) and Your Everyday AI newsletters
+
+THE BIG PICTURE
+
+The AI industry is moving at breakneck speed this week. Anthropic is approaching profitability and preparing its biggest model drops yet. DeepSeek is slashing prices permanently and closing a massive funding round. Google quietly upgraded its fastest model. OpenAI's Codex keeps shipping features that make it the most autonomous AI tool on the market. And the White House pulled back from signing an AI executive order after industry pressure.
+
+TOP STORIES
+
+1. Anthropic Nears Profitability, Prepares Mythos 1 and Opus 4.8
+
+Anthropic is on track for $10.9 billion in Q2 revenue, up from $4.8 billion in Q1, growing faster than Zoom did during the pandemic. Compute costs dropped from 71 cents to 56 cents per revenue dollar. Claude Code alone is generating $2.5 billion in revenue. The company expects $559 million in profit ahead of an October IPO. Meanwhile, Anthropic's Mythos 1 model is being prepared for broader release in Claude Code and Claude Security, with traces already appearing on Google Cloud and AWS. Claude Opus 4.8 is also rumored to be in the works.
+
+2. DeepSeek Permanently Slashes Prices 75 Percent, Closes $10 Billion Round
+
+DeepSeek made its 75 percent V4 Pro price cut permanent, undercutting OpenAI's GPT-5, Claude Opus 4.7, and Gemini 3.5 Flash. Separately, the company is closing a roughly $10 billion funding round at a $45 billion pre-money valuation, with backing from Tencent, IDG Capital, NetEase, JD.com, and a state-backed AI fund. They are prioritizing AGI research over quick commercialization.
+
+3. Trump Delays AI Executive Order After Industry Pushback
+
+David Sacks warned Trump that the pending AI executive order could lead to mandatory regulations that slow down the US in its race with China. Trump pulled the signing ceremony, saying he was not satisfied with parts of it. The order would have let the government review AI models ahead of time to spot security risks. The incident shows how powerful Sacks' influence is and marks a win for those against strong guardrails to limit the risks posed by the technology.
+
+4. Google Gemini 3.5 Flash Quietly Becomes Their Best Model
+
+Google's fastest model tier now outperforms Gemini 3.1 Pro on coding and agentic benchmarks while running four times faster than comparable frontier models. AI Mode in Search was silently upgraded. Gemini 3.5 Pro arrives next month, which will give a clearer picture of where Google actually stands.
+
+5. OpenAI Codex Ships Locked-Mac Control
+
+Codex now lets users send tasks from their phone and have the app control a Mac even when it is locked and the screen is off, a big step for AI agent access on desktop computers. The company says the feature works through a Computer Use plugin with permission controls, temporary background unlocking, and a safeguard that instantly relocks the Mac if someone touches the keyboard or mouse. It also blocks sensitive system actions, including Terminal, Codex itself, and admin prompts.
+
+6. The Neocloud Boom is Real
+
+SpaceX acquired xAI, took Elon's two Colossus data centers, and started renting them to Anthropic for $15 billion a year. SpaceX did $18.7 billion in total revenue last year after 23 years of building rockets, so they almost doubled the company in a quarter by becoming a cloud provider. The AI buildout adds up to $7.5 trillion of spend over the next 4.5 years, about 5 percent of US GDP, comparable to the 1880s railroad boom.
+
+7. MCP Specification Gets Biggest Overhaul Since Launch
+
+The release candidate for the next Model Context Protocol specification introduces a stateless core that scales on ordinary HTTP infrastructure, extensions, authorization that aligns more closely with OAuth and OpenID Connect deployments, a formal deprecation policy, and many other changes. It contains breaking changes. The final specification will ship on July 28.
+
+8. Project Glasswing: AI Finds Over 10,000 Critical Vulnerabilities
+
+Anthropic's Project Glasswing, using Claude Mythos Preview, has worked with about 50 partners to uncover over ten thousand high- and critical-severity vulnerabilities in critical software, including thousands across more than 1,000 open-source projects, with true-positive rates above 90 percent for vetted high-risk findings. Partners include Cloudflare, Mozilla, Palo Alto Networks, Microsoft, Oracle, and major banks.
+
+9. Microsoft Cancels Claude Code Licenses for Employees
+
+Microsoft is canceling Claude Code licenses for its employees to transition them to GitHub Copilot CLI as part of an effort to consolidate internal tools and reduce operating expenses.
+
+10. Pentagon Tests AI Alternatives to Claude
+
+The Pentagon is actively testing AI models from other major vendors, marking a fresh push to replace Anthropic's Claude after the Defense Department cut ties over a supply-chain risk designation. 25 department power users began evaluating the tools in early March. Officials say rivals such as OpenAI and Google are under review.
+
+MORE NOTABLE STORIES
+
+Marc Andreessen Claims AGI Has Arrived: Says frontier AI models now outperform most human experts on most questions, and that the shift has happened quietly because AI companies are underselling their own progress. He also argued that coding agents are radically boosting productivity.
+
+LinkedIn Cracking Down on AI-Generated Content: The platform warns that overuse of AI can dilute real human insight and is rolling out systems to detect and reduce distribution of generic or automated posts and comments. Early testing shows it can identify such content with 94 percent accuracy.
+
+AI-Generated Code Causing More Production Failures: A CloudBees survey found that enterprise AI-generated code adoption is driving more production failures and higher spending, highlighting the growing verification gap around AI-assisted development.
+
+ChatGPT Now Native Inside Microsoft PowerPoint: Pulling directly from Gmail, Outlook, and SharePoint to build slides from your actual work. Outputs stay fully editable.
+
+Spotify Launching AI-Powered Interactive Podcasts: In-episode Q&A, creator Memberships, and AI-generated Personal Podcasts are all coming to the platform.
+
+Meta Launches Forum: A Reddit-like standalone app repurposing Facebook Groups content into a format for deeper discussions, with AI-powered search and summarization.
+
+Google Building Universal Cart for Ecommerce: A Universal Cart follows users across Google's apps with the Agent Payments Protocol enabling AI-driven purchasing under user-defined rules.
+
+Cisco Says Agentic AI is Reshaping Enterprise Networks: WAN traffic projected to grow 9x with agentic AI versus 2.5x without, requiring more resilient and observable networking.
+
+Apple M5 Memory Security Defeated in 5 Days: A three-person team using Anthropic's Mythos Preview model produced the first public macOS kernel exploit defeating Memory Integrity Enforcement on M5 silicon.
+
+Perplexity Open-Sources Bumblebee: A read-only security scanner that identifies risky packages, extensions, and AI tool configurations on developer machines.
+
+AI Security is Unsolved for Everyone Including Google: Google Cloud COO Francis de Souza says capabilities are moving faster than security controls and even Google is learning in real time.
+
+Intuit Repositioning Mailchimp: Cutting investment as growth stalls at 11 million users. Slower innovation and unclear roadmap direction are pushing marketers to evaluate alternatives.
+
+Snap Specs True AR Glasses Launching This Fall: At around $2500, these will be the first relatively normal-looking glasses that can place interfaces and virtual objects onto physical space without significantly dimming or distorting the real-world view.
+
+Supply Chain Attacks at Unprecedented Scale: TeamPCP has corrupted hundreds of open source tools. Even GitHub has been breached through a poisoned VSCode extension. The group appears financially motivated, deploying ransomware and data extortion campaigns.
+
+Specialization Beats Scale in AI Procurement: Enterprise AI procurement should prioritize task-focused specialization rather than defaulting to the largest frontier models. A specialized 3B model outperformed commercial frontier APIs in OCR benchmarks.
+
+AI Stacks Are Rewriting the Rules of Business: AI is becoming a new enterprise stack, reshaping how infrastructure, software, and business workflows are designed and operated, not simply sitting on top of existing SaaS tools.
+
+The Annoyance Economy: AI companies are creating more user friction so they can sell tools that manage the friction. Products that remove effort and deliver direct outcomes will stand out. The Annoyance Economy costs US families at least $165 billion in wasted time and lost money each year.
+
+Netflix Using Multimodal AI for Video Search: Editors search thousands of hours of raw footage using multiple specialized AI models including character recognition, scene classification, dialogue, and object detection through a three-stage pipeline.
+
+Sources: TLDR AI, TLDR Main, TLDR Dev, TLDR IT, TLDR Marketing, TLDR InfoSec (May 25, 2026) and Your Everyday AI (May 22, 2026). Note: No newsletters published on Saturday May 24. This briefing covers the most recent editions from both sources.
